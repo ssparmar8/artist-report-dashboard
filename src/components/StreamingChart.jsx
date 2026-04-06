@@ -8,11 +8,6 @@ const StreamingChart = ({ artist }) => {
   const chartRef = useRef(null);
 
   useEffect(() => {
-    let url = 'https://4b079ceeb5d6e253856dc427359af2.06.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/6b820f1b9c824635beb4270044939e5a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3it6psxJy6zB3IgLauPsi8Nwp2tcKCku73VYAOkQgjs'
-      fetch(url, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      })
     if (!canvasRef.current) return;
     if (chartRef.current) chartRef.current.destroy();
 
@@ -22,7 +17,7 @@ const StreamingChart = ({ artist }) => {
     chartRef.current = new Chart(canvasRef.current, {
       type: 'bar',
       data: {
-        labels: tracks.map(t => t.title.length > 18 ? t.title.slice(0, 18) + '…' : t.title),
+        labels: tracks.map(t => { const s = t.title || ''; return s.length > 18 ? s.slice(0, 18) + '…' : s; }),
         datasets: [{
           data: tracks.map(t => t.streams / 1000000),
           backgroundColor: tracks.map((t, i) => {

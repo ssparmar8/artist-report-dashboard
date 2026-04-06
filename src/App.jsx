@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { artists, rosterStats } from './data/artistData';
+import React, { useState, useEffect } from 'react';
+import { transformArtists, computeRosterStats } from './utils/transformArtists';
 import MetricCard from './components/MetricCard';
 import ArtistCard from './components/ArtistCard';
 import ArtistDetail from './components/ArtistDetail';
@@ -59,15 +59,71 @@ const TourEvent = ({ event, artist }) => (
   </div>
 );
 
+const API_URL = 'https://4b079ceeb5d6e253856dc427359af2.06.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/6b820f1b9c824635beb4270044939e5a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3it6psxJy6zB3IgLauPsi8Nwp2tcKCku73VYAOkQgjs';
+
+function fmtNum(n) {
+  if (!n) return '—';
+  if (n >= 1e12) return (n / 1e12).toFixed(1).replace(/\.0$/, '') + 'T';
+  if (n >= 1e9)  return (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+  if (n >= 1e6)  return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1e3)  return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  return String(n);
+}
+
 function App() {
-  const [selectedArtist, setSelectedArtist] = useState(artists[0]);
-  const [activeSection, setActiveSection] = useState('roster');
+  const [artists, setArtists]           = useState([]);
+  const [rosterStats, setRosterStats]   = useState({});
+  const [selectedArtist, setSelectedArtist] = useState(null);
+  const [activeSection, setActiveSection]   = useState('roster');
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(null);
+
+  useEffect(() => {
+    fetch(API_URL, { method: 'GET', headers: { 'Content-Type': 'application/json' } })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        const rawItems   = Array.isArray(data) ? data : (data.value || []);
+        const transformed = transformArtists(rawItems);
+        const sorted = [...transformed].sort((a, b) => {
+          if (a.rank == null && b.rank == null) return 0;
+          if (a.rank == null) return 1;
+          if (b.rank == null) return -1;
+          return a.rank - b.rank;
+        });
+        setArtists(sorted);
+        setRosterStats(computeRosterStats(transformed));
+        setSelectedArtist(transformed[0] || null);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
 
   const allAwards = artists.flatMap(a => a.awards.map(aw => ({ ...aw, artist: a }))).slice(0, 8);
   const allTours = artists
     .flatMap(a => a.tours.filter(t => t.status === 'announced').map(t => ({ ...t, artist: a })))
     .sort((a, b) => new Date(a.date) - new Date(b.date))
     .slice(0, 8);
+
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f0f19', color: 'rgba(255,255,255,0.5)', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#4F8EF7', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ fontSize: '13px' }}>Loading artist data…</div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f0f19', color: '#E85D8A', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ fontSize: '16px' }}>Failed to load data</div>
+      <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{error}</div>
+    </div>
+  );
 
   return (
     <div className="app">
@@ -92,8 +148,11 @@ function App() {
         </nav>
 
         <div style={{ padding: '0 12px', marginBottom: '8px' }}>
-          <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.92)', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 12px', marginBottom: '8px' }}>
-            Artists
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 12px', marginBottom: '8px' }}>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.92)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Artists
+            </div>
+            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)' }}>by rank</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {artists.map(a => (
@@ -109,10 +168,20 @@ function App() {
                   background: `${a.color}33`, display: 'flex', alignItems: 'center',
                   justifyContent: 'center', fontSize: '10px', fontWeight: '600', color: a.color,
                 }}>{a.initials}</div>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#fff' }}>{a.name}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '12px', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {a.name}
+                  </div>
                   <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>{a.country}</div>
                 </div>
+                {a.rank && (
+                  <div style={{
+                    fontSize: '9px', fontWeight: '700', minWidth: '22px', height: '18px',
+                    borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: `${a.color}20`, color: a.color, border: `1px solid ${a.color}44`,
+                    flexShrink: 0,
+                  }}>#{a.rank}</div>
+                )}
               </button>
             ))}
           </div>
@@ -147,12 +216,11 @@ function App() {
 
             {/* KPIs */}
             <div className="metrics-grid" style={{ marginBottom: '28px' }}>
-              <MetricCard label="Total artists" value="4" sub="All active" />
-              <MetricCard label="Combined streams" value="85B+" sub="Spotify catalog" />
-              <MetricCard label="Monthly listeners" value="207M" sub="Spotify aggregate" />
-              <MetricCard label="YouTube views" value="64B+" sub="Combined total" />
-              <MetricCard label="Awards won" value="7+" sub="Grammy & Latin Grammy" />
-              <MetricCard label="Active tours" value="4" sub="2025–2026" />
+              <MetricCard label="Total artists" value={String(rosterStats.totalArtists || 0)} sub="All active" />
+              <MetricCard label="Monthly listeners" value={fmtNum(rosterStats.totalMonthlyListeners)} sub="Spotify aggregate" />
+              <MetricCard label="YouTube views" value={fmtNum(rosterStats.totalYoutubeViews)} sub="Combined total" />
+              <MetricCard label="Awards won" value={String(rosterStats.totalAwardsWon || 0)} sub="Grammy & Latin Grammy" />
+              <MetricCard label="Active tours" value={String(rosterStats.activeTours || 0)} sub="Announced events" />
             </div>
 
             {/* Artist cards */}

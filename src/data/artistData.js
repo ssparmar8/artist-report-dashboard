@@ -132,7 +132,7 @@ export const artists = [
     age: 29,
     activeFrom: 2008,
     status: "active",
-    color: "#E85D8A",
+    color: "#A855F7",
     initials: "BG",
     genres: ["Pop", "Hip-hop", "Reggaeton", "Latin", "Regional Mexican"],
     roles: ["Singer", "Rapper", "Actress"],

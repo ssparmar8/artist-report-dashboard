@@ -3,13 +3,6 @@ import StreamingChart from './StreamingChart';
 
 const tabs = ['Overview', 'Discography', 'Tours', 'Fan Signals', 'News'];
 
-const fmt = (n) => {
-  if (n >= 1000000000) return (n / 1000000000).toFixed(1) + 'B';
-  if (n >= 1000000) return (n / 1000000).toFixed(0) + 'M';
-  if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
-  return n;
-};
-
 const statusColor = (s) => {
   if (s === 'won' || s === 'honored') return '#F5A623';
   if (s === 'nominated') return 'rgba(255,255,255,0.4)';
@@ -44,7 +37,7 @@ const ArtistDetail = ({ artist }) => {
               {artist.realName} · {artist.city}, {artist.country} · Age {artist.age}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
-              {artist.genres.slice(0, 4).map(g => (
+              {(artist.genres || []).slice(0, 4).map(g => (
                 <span key={g} style={{
                   fontSize: '10px', padding: '3px 9px', borderRadius: '20px',
                   background: `${artist.color}20`, color: artist.color,
@@ -126,7 +119,7 @@ const ArtistDetail = ({ artist }) => {
 
         {activeTab === 'Discography' && (
           <div>
-            {artist.albums.map((album, i) => (
+            {(artist.albums || []).map((album, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: '14px',
                 padding: '12px 0', borderBottom: i < artist.albums.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
@@ -152,10 +145,10 @@ const ArtistDetail = ({ artist }) => {
 
         {activeTab === 'Tours' && (
           <div>
-            {artist.tours.length === 0 && (
+            {(artist.tours || []).length === 0 && (
               <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '30px 0' }}>No tour data available</div>
             )}
-            {artist.tours.map((t, i) => (
+            {(artist.tours || []).map((t, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'flex-start', gap: '14px',
                 padding: '12px 0', borderBottom: i < artist.tours.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
@@ -185,7 +178,7 @@ const ArtistDetail = ({ artist }) => {
 
         {activeTab === 'Fan Signals' && (
           <div>
-            {artist.fanSignals.map((s, i) => (
+            {(artist.fanSignals || []).map((s, i) => (
               <div key={i} style={{
                 padding: '14px', marginBottom: '10px',
                 background: 'rgba(255,255,255,0.03)', borderRadius: '10px',
@@ -212,7 +205,7 @@ const ArtistDetail = ({ artist }) => {
 
         {activeTab === 'News' && (
           <div>
-            {artist.recentNews.map((n, i) => (
+            {(artist.recentNews || []).map((n, i) => (
               <div key={i} style={{
                 display: 'flex', gap: '12px', padding: '12px 0',
                 borderBottom: i < artist.recentNews.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',

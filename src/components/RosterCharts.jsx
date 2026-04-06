@@ -71,7 +71,7 @@ export const GenreDonut = ({ artists }) => {
     if (chartRef.current) chartRef.current.destroy();
 
     const genreMap = {};
-    artists.forEach(a => a.genres.slice(0, 3).forEach(g => {
+    artists.forEach(a => (a.genres || []).slice(0, 3).forEach(g => {
       genreMap[g] = (genreMap[g] || 0) + 1;
     }));
     const sorted = Object.entries(genreMap).sort((a, b) => b[1] - a[1]).slice(0, 7);

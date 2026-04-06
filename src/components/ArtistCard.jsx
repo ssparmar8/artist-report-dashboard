@@ -32,7 +32,14 @@ const ArtistCard = ({ artist, isSelected, onClick }) => {
           <div style={{ fontSize: '14px', fontWeight: '500', color: '#fff' }}>{artist.name}</div>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{artist.country}</div>
         </div>
-        <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+        <div style={{ marginLeft: 'auto', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px' }}>
+          {artist.rank && (
+            <div style={{
+              fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px',
+              background: `${artist.color}22`, color: artist.color,
+              border: `1px solid ${artist.color}55`,
+            }}>#{artist.rank}</div>
+          )}
           <div style={{
             fontSize: '10px', padding: '2px 8px', borderRadius: '20px',
             background: artist.status === 'active' ? '#2EC4A022' : '#88888822',
