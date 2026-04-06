@@ -8,6 +8,11 @@ const StreamingChart = ({ artist }) => {
   const chartRef = useRef(null);
 
   useEffect(() => {
+    let url = 'https://4b079ceeb5d6e253856dc427359af2.06.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/6b820f1b9c824635beb4270044939e5a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3it6psxJy6zB3IgLauPsi8Nwp2tcKCku73VYAOkQgjs'
+      fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
     if (!canvasRef.current) return;
     if (chartRef.current) chartRef.current.destroy();
 

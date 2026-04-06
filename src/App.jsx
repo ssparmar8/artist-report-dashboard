@@ -140,7 +140,7 @@ function App() {
                 fontSize: '11px', padding: '5px 14px', borderRadius: '20px',
                 background: '#2EC4A015', color: '#2EC4A0', border: '1px solid #2EC4A033',
               }}>
-                {rosterStats.totalArtists} artists · Live data
+                {rosterStats.totalArtists} Artists · Live data
               </div>
             </div>
 
@@ -169,7 +169,7 @@ function App() {
                 <ListenersChart artists={artists} />
               </div>
               <div className="card">
-                <div className="card-label">Genre distribution — roster</div>
+                <div className="card-label">Genre distribution — Artists</div>
                 <GenreDonut artists={artists} />
               </div>
             </div>
