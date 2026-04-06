@@ -5,6 +5,7 @@ import ArtistCard from './components/ArtistCard';
 import ArtistDetail from './components/ArtistDetail';
 import { ListenersChart, GenreDonut, AlbumStreamsChart } from './components/RosterCharts';
 import './App.css';
+import ChatBot from './components/ChatBot';
 
 const AwardsBadge = ({ award, artist }) => {
   const won = award.status === 'won' || award.status === 'honored';
@@ -215,6 +216,7 @@ function App() {
             <ArtistDetail artist={selectedArtist} />
           </div>
         )}
+        <ChatBot />
       </main>
     </div>
   );
